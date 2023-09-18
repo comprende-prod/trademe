@@ -14,7 +14,8 @@ LISTING_TAGS = [SUPER_FEATURE_TAG, PREMIUM_TAG, NORMAL_TAG]
 # - Title
 TITLE_TAG = "tm-property-search-card-listing-title"
 # - Address
-ADDRESS_TAG = "tm-property-search-card-address-subtitle"
+# Turns out they use the same tag for sales addresses AND rent availability.
+ADDRESS_TAG = "tm-property-search-card-address-subtitle"  
 # - Price
 TAG_PRICE = "div"
 PRICE_CLASS = "tm-property-search-card-price-attribute__price"

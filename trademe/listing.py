@@ -17,6 +17,7 @@ class Listing:
     address: str = None
     price: str = None
     features: str = None
+    availability: str = "n/a"
 
     # Handled individually by constructors:
     agent: str = None
@@ -34,7 +35,19 @@ class Listing:
         listing = cls()
 
         listing.title = listing_soup.find(constants.TITLE_TAG).string
-        listing.address = listing_soup.find(constants.ADDRESS_TAG).string
+
+        # As mentioned in constants.py, TradeMe uses the same tag for rent
+        # listings' availability AND sales listings' addresses.
+        # - If string.lower() has "available" in it, it's a rent listing
+        #   and you need to set the `availability` attribute.
+        # - Else, it's an address, so set address.
+        address_or_availability = listing.find(constants.ADDRESS_TAG).string
+        if "available" in address_or_availability.lower():
+            listing.availability = address_or_availability
+        else:
+            listing.address = address_or_availability
+
+        # Other attributes:
         listing.price = listing_soup.find(
             constants.TAG_PRICE, 
             class_=constants.PRICE_CLASS
