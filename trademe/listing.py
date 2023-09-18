@@ -29,9 +29,9 @@ class Listing:
 
 
     @classmethod
-    def _construct_common_attributes(listing_soup: BeautifulSoup):
+    def _construct_common_attributes(cls, listing_soup):
         """Helper for constructors."""
-        listing = Listing()
+        listing = cls()
 
         listing.title = listing_soup.find(constants.TITLE_TAG).string
         listing.address = listing_soup.find(constants.ADDRESS_TAG).string
@@ -48,10 +48,10 @@ class Listing:
 
 
     @classmethod
-    def from_super_feature(listing_soup: BeautifulSoup):
+    def from_super_feature(cls, listing_soup):
         """Construct Listing object from super feature listing soup."""
         
-        listing = Listing._construct_common_attributes(listing_soup)
+        listing = cls._construct_common_attributes(listing_soup)
 
         # Agent
         # No handling needed:
@@ -67,7 +67,10 @@ class Listing:
         )
         try:
             listing.agency = agency_element["alt"]
-        except KeyError:
+        except (KeyError, TypeError):
+            # ^ TypeError *sounds* weird, but we include it because you'll get
+            #   a TypeError if agency_element is None above.
+
             # If not thrown error from code above, it's likely a private 
             # listing:
             listing.agency = \
@@ -77,14 +80,14 @@ class Listing:
 
 
     @classmethod
-    def from_premium_listing(listing_soup: BeautifulSoup):
+    def from_premium_listing(cls, listing_soup):
         """Construct Listing object from premium listing soup."""
 
-        listing = Listing._construct_common_attributes(listing_soup)
+        listing = cls._construct_common_attributes(listing_soup)
 
         # Agent
         try:
-            listing.agent = listing.agent = listing_soup.find(
+            listing.agent = listing_soup.find(
                 constants.AGENT_PREMIUM_TAG,
                 class_=constants.AGENT_PREMIUM_CLASS
             ).string
@@ -99,7 +102,7 @@ class Listing:
                 constants.AGENCY_TAG,
                 class_=constants.AGENCY_PREMIUM_CLASS
             )["alt"]
-        except KeyError:
+        except (KeyError, TypeError):
             # Agency at the top of the listing insteaD:
             listing.agency = listing_soup.find(
                 constants.AGENCY_TAG,
@@ -110,10 +113,10 @@ class Listing:
 
 
     @classmethod
-    def from_normal_listing(listing_soup: BeautifulSoup):
+    def from_normal_listing(cls, listing_soup):
         """Construct Listing object from normal listing soup."""
         
-        listing = Listing._construct_common_attributes(listing_soup)
+        listing = cls._construct_common_attributes(listing_soup)
 
         # Agent
         try:
@@ -130,7 +133,7 @@ class Listing:
                 constants.AGENCY_TAG,
                 class_=constants.AGENCY_NORMAL_CLASS
             )["alt"]
-        except KeyError:
+        except (KeyError, TypeError): 
             listing.agency = listing_soup.find(
                 constants.ALT_AGENCY_NORMAL_TAG,
                 class_=constants.ALT_AGENCY_NORMAL_CLASS

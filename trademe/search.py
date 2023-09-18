@@ -1,4 +1,4 @@
-"""Contains methods for searching TradeMe.
+"""Contains methods for searching TradeMe, search() and make_url().
 """
 
 
@@ -8,17 +8,18 @@ from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver import ChromeOptions
 
-from .constants import LISTING_TAGS, SUPER_FEATURE_TAG, PREMIUM_TAG, NORMAL_TAG
+from .constants import SUPER_FEATURE_TAG, PREMIUM_TAG, NORMAL_TAG
 from .listing import Listing
 
 
 # Public methods: -------------------------------------------------------------
 
 
-def search_without_async(timeout=None, 
-                         driver_arguments=["--headless=new", 
-                                           "--start-maximized"], 
-                         *urls):
+def search(
+        timeout=None, 
+        driver_arguments=["--headless=new", "--start-maximized"], 
+        *urls
+        ):
     """Searches TradeMe using URLs. 
     
     For each URL, it paginates until it can't find any other listings, then 
@@ -52,101 +53,120 @@ def search_without_async(timeout=None,
         )
         all_soups.append(soups)
 
-    print(all_soups[0][1])  # num urls and pages is right
-
-    # Use the right constructors to make listings (doesn't need to be in loop)
-    all_listings = \
-        [[_page_soup_to_listings(page_soup) for page_soup in url_soups] \
-        for url_soups in all_soups]
+    # Use the right constructors to make listings 
+    # This for loop is band-aid code, ideally this is map() or list comp:
+    all_listings = []
+    for url_soups in all_soups:
+        for page_soup in url_soups:
+            all_listings.extend(_page_soup_to_listings(page_soup))
 
     return all_listings
 
 
-# make_suburb_url() and make_kwarg_url() shoudl probably just be one method, 
-# but anyway.
+def make_url(
+        sale_or_rent: str, region: str = "", district: str = "",
+        suburb: str = "", **kwargs
+):
+    """Make URL for search() from search criteria.
 
+    Note there is no data validation for region, district, or suburb names, or
+    for kwargs.
 
-def make_suburb_url(sale_or_rent: str, region: str, district: str, suburb: str, 
-             **kwargs):
-    """Make URL from common search parameters and keyword arguments.
-    
-    Note that kwargs not validated. 
+    Also note that two-word locations should be spelled with dashes (not
+    spaces), e.g. instead of suburb="Aro Valley", do suburb="aro-valley".
+    Capitalisation doesn't matter.
 
-    Should probably have used urlparse, but I don't have that kinda time bud.
-
-    Some valid kwargs include:
-    price_min: minimum price (valid for sale or rent); e.g. price_min=50.
-    search_string: what you might type in the search bar; e.g 
-        search_string=comprende.
-
-    Args:
-        sale_or_rent: Can be "sale" or "rent".
-        region: Region searching in, e.g. "wellington", "auckland", etc.
-        district: District searching in, e.g. "upper-hutt", "wellington".
-        suburb: Suburb searching in, e.g. "aro-valley".
-
-    Returns:
-        URL to be used for searching.
+    Valid kwargs:
+    For rent or sale searches:
+        *Integers*:
+        - bathrooms_min
+        - bathrooms_max
+        - bedrooms_min
+        - bedrooms_max
+        - price_min
+        - price_max
+        *Other*
+        - property_type; can be apartment, carpark, house, townhouse, unit
+        - adjacent_suburbs; true/false
+        - search_string; can be any string, e.g. "Comprende"
+    For rent searches only:
+        - available_now; true/false
+        - pets_ok; true/false
+    For sale searches only:
+        - open_homes; true/false
+        - new_homes; true/false
     """
-    url = f"https://www.trademe.co.nz/a/property/residential/{sale_or_rent}/{region}/{district}/{suburb}/search?"
-    if kwargs:  # unsure if this is needed
-        kwarg_number = 1
-        for k, v in kwargs.items():
-            if kwarg_number > 1:
-                # If it's not the first kwarg, you need to add "&":
-                url += f"&{k}={v}"
-            else:
-                url += f"{k}={v}"
-            kwarg_number += 1  # increment kwarg_number
+    # Handle illegal location (region, district, suburb) inputs:
+    # The only legal inputs are:
+    # 1. region, district, suburb
+    # 2. region, district
+    # 3. suburb
+    # 4. None of those
+    if ((region and district and suburb) or (region and district) or region) \
+        == False: 
+        # ^ Order of this line is crucial due to short circuit operators.
+        if not (region and district and suburb == False):  
+            raise ValueError(
+                "The only legal inputs are: \
+                1. region, district, suburb \
+                2. region, district \
+                3. suburb \
+                4. None of those"
+            )
+    
+    # Check sale_or_rent really is "sale" or "rent":
+    if sale_or_rent.lower() not in ("sale", "rent"): 
+        raise ValueError("sale_or_rent must be 'sale' or 'rent'.")
+
+    # Starts with sale_or_rent, the only required argument (and first one):
+    url = f"https://www.trademe.co.nz/a/property/residential/{sale_or_rent}"
+    
+    # Append location arguments:
+    for arg in (region, district, suburb):
+        if arg: url += f"/{arg}"  
+        # ^ Crucial that this ONLY happens when arg is Truthy; TradeMe messes
+        #   up otherwise (double slashes always take you to the home page).
+
+    # Append this thing, which we need:
+    url += "/search?"
+
+    # Handle kwargs:
+    # Note that it's also crucial that this happens last; kwargs come at the 
+    # end of the URL.
+    kwarg_number = 1
+    for k, v in kwargs.items():
+        # If it's the first kwarg, you don't need to add a "&":
+        if kwarg_number == 1:
+            url += f"{k}={v}"
+        else:
+            url += f"&{k}={v}"
+        kwarg_number += 1
+    
     return url
-
-
-def make_kwarg_url(sale_or_rent: str, **kwargs):
-    """Like make_suburb_url(), but less stuff."""
-    url = f"https://www.trademe.co.nz/a/property/residential/{sale_or_rent}/search?"
-    if kwargs:  # unsure if this is needed
-        kwarg_number = 1
-        for k, v in kwargs.items():
-            if kwarg_number > 1:
-                # If it's not the first kwarg, you need to add "&":
-                url += f"&{k}={str(v)}"
-            else:
-                url += f"{k}={str(v)}"
-            kwarg_number += 1  # increment kwarg_number
-    return url  
-
-# Do much later
-def search_using_async(timeout=None, driver_arguments=["--headless=new"], 
-                       *urls):
-    """Uh, coming soon. Idk how to use this stuff yet."""
-    pass
 
 
 # Private helper methods: -----------------------------------------------------
 
 
-def _page_soup_to_listings(page_soup) -> list[Listing]:
+def _page_soup_to_listings(page_soup):
+    """Converts a page result BeautifulSoup object to a list of Listings."""
     listings = []
-    # Super features:
+
+    # Find listings: returns ResultSets
     super_features = page_soup.find_all(SUPER_FEATURE_TAG)
-    if super_features:
-        listings.extend(
-            [Listing.from_super_feature(s) for s in super_features]
-        )
+    premiums = page_soup.find_all(PREMIUM_TAG)
+    normals = page_soup.find_all(NORMAL_TAG)
 
-    # Premium listings:
-    premium_listings = page_soup.find_all(PREMIUM_TAG)
-    if premium_listings:
-        listings.extend(
-            [Listing.from_premium_listing(p) for p in premium_listings]
-        )
+    # Call constructors:
+    super_listings = [Listing.from_super_feature(s) for s in super_features]
+    premium_listings = [Listing.from_premium_listing(p) for p in premiums]
+    normal_listings = [Listing.from_normal_listing(n) for n in normals]
 
-    # Normal listings:
-    normal_listings = page_soup.find_all(NORMAL_TAG)
-    if normal_listings:
-        listings.extend(
-            [Listing.from_normal_listing(n) for n in premium_listings]
-        )
+    # Append Listing objects to list;
+    listings.extend(super_listings)
+    listings.extend(premium_listings)
+    listings.extend(normal_listings)
+
     return listings
 
 
@@ -184,7 +204,7 @@ def _get_page_soups(url,
         # Read source
         driver.get(current_url)
         page_source = driver.page_source
-        page_soup = BeautifulSoup(page_source)
+        page_soup = BeautifulSoup(page_source, features="html.parser")
 
         # Check if next page:
         has_next_page = _has_next_page(page_soup)
@@ -202,7 +222,7 @@ def _get_page_soups(url,
 
     return soups
 
-# Trying a new version:
+
 def _get_next_page_url(current_url):
     """This works, basically by magic."""
     parsed = urlparse(current_url)
@@ -223,9 +243,17 @@ def _get_next_page_url(current_url):
 
 
 def _has_next_page(page_soup):
-    """Checks if any of LISTING_TAGS are present in page_soup."""
-    has_next_page = False
-    if any([page_soup.find(tag) for tag in LISTING_TAGS]):
-        has_next_page = True
+    """Checks if page displays a "No results found" message: if so, returns 
+    False.
+    """
+    has_next_page = True
+
+    try:
+        no_results = page_soup.find("h2", class_="tm-no-results__heading")
+        if "no results found" in no_results.string.lower():
+            has_next_page = False
+    except AttributeError:  # i.e. if doing None.string.lower()
+        pass  # keep has_next_page as True
+
     return has_next_page
 
