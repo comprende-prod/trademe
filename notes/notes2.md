@@ -7,7 +7,8 @@ DONE
 DONE
 - Also include how someone might make their results into CSV and DataFrame
 DONE
+- Fix the test stuff - you have a comment in test_search.py for that.
 - Write a bunch of tests - we want high coverage! Everything! this includes testing that the right exceptions get raised, etc.
-
+- it also, uh, doesn't do parking anymore. good god. Ask Awhina how essential this is (given you'll need to prioritise pretty seriously).
 - Add a stop_page parameter to your search method - should be easy.
 - Set up linting or sth? Or just don't.
