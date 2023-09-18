@@ -1,6 +1,8 @@
 """Stores project-level constants."""
 
 
+TM_BASE_URL = "https://www.trademe.co.nz"
+
 # Listings:
 SUPER_FEATURE_TAG = "tm-property-super-feature-card"
 PREMIUM_TAG = "tm-property-premium-listing-card"
@@ -23,6 +25,12 @@ PRICE_CLASS = "tm-property-search-card-price-attribute__price"
 FEATURES_TAG = "ul"
 FEATURES_CLASS  = "tm-property-search-card-attribute-icons__features"
 FEATURES_KEY = "aria-label"
+
+# - List item constants - quite general-purpose, but only used for parking
+ITEM_TAG = "li"
+ITEM_CLASS = "tm-property-search-card-attribute-icons__metric ng-star-inserted"
+# - For checking the list item has a parking icon:
+
 
 # Identifiers that differ between listing types:
 
