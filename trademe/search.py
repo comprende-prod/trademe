@@ -22,26 +22,21 @@ def search(
         ):
     """Searches TradeMe using URLs. 
     
-    For each URL, it paginates until it can't find any other listings, then 
-    returns.
+    For each URL, search() paginates until it can't find any more listings, 
+    then returns.
     
-    Note:
-    - This does NOT use asyncio. So it's likely unsuitable slow for large 
-      searches.
-    - This uses a Chrome webdriver, so it's recommended that you have the 
-      relevant Chrome drivers installed.
+    Note: search() uses a Chrome webdriver, so it's recommended you have 
+    the relevant Chrome drivers downloaded in advance.
 
     Args:
         timeout: The implicit wait used (in seconds) for the Selenium webdriver
             under the hood.
         driver_arguments: The arguments set for the webdriver.
-        *urls: NOTE THESE ARE FIRST PAGES AND STUFF!!!
+        *urls: URL strings to be treated as the first page of a set of search
+            results, which search() will paginate over.
 
     Returns:
-        blah blah blah
-    
-    Raises:
-        Probably an InvalidArgumentError for the selenium driver arguments?
+        A list of Listing objects.
     """
     # Get BeautifulSoups for each page of each URL:
     all_soups = []  # Stores lists of BeautifulSoups for each URL in *urls.
