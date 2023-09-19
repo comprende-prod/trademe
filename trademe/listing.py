@@ -49,22 +49,21 @@ class Listing:
 
         # Parking:
         # - Get li tags:
-        """
-        lis = listing_soup.find_all(
-            "li", 
-            class_="tm-property-search-card-attribute-icons__metric ng-star-in\
-                serted"
-        )
+        #
+        #lis = listing_soup.find_all(
+        #    "li", 
+        #    class_="tm-property-search-card-attribute-icons__metric ng-star-in\
+        #        serted"
+        #)
         # - See if there are li tags with parking icons:
-        for l in lis:
-            has_parking_icon = \
-                lambda tag : tag.find("tg-icon")["alt"] == "Total parking"
-            if l.find(has_parking_icon):
-                listing.parking = l.find(
-                    "span", 
-                    class_="tm-property-search-card-attribute-icons__metric-value"
-                ).string
-        """
+        #for l in lis:
+        #    has_parking_icon = \
+        #        lambda tag : tag.find("tg-icon")["alt"] == "Total parking"
+        #    if l.find(has_parking_icon):
+        #        listing.parking = l.find(
+        #            "span", 
+        #            class_="tm-property-search-card-attribute-icons__metric-value"
+        #        ).string
                 
         # Less complicated attributes: ---------------------------------------- 
         
