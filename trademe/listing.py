@@ -19,7 +19,7 @@ class Listing:
     features: str = None
     link: str = None
     availability: str = "n/a"
-    parking: str = "n/a"  
+    #parking: str = "n/a"  
     # ^ Set bottom two to "n/a" so you don't end up with Nones, since others 
     #   are guaranteed to not stay None.
 
@@ -51,19 +51,24 @@ class Listing:
             listing.address = address_or_availability
 
         # Parking:
-        # - Find the li tag bits 
-        # - Of these, find the li tag with a tg-icon with the right "alt"
-        # - With that li, get the right span tag's string.
-        def has_parking(list_item_tag):
-            return (list_item_tag.name == "li") and \
-                (list_item_tag.get("tg-icon").get("alt").lower() == \
-                 "total parking")
-        parking_list_item = listing_soup.find(has_parking)  
-        if parking_list_item:  # Note it will be None if not found
-            span = parking_list_item.find("span", class_="tm-property-search-c\
-                                          ard-attribute-icons__metric-value")
-            listing.parking = span.string
-
+        # - Get li tags:
+        """
+        lis = listing_soup.find_all(
+            "li", 
+            class_="tm-property-search-card-attribute-icons__metric ng-star-in\
+                serted"
+        )
+        # - See if there are li tags with parking icons:
+        for l in lis:
+            has_parking_icon = \
+                lambda tag : tag.find("tg-icon")["alt"] == "Total parking"
+            if l.find(has_parking_icon):
+                listing.parking = l.find(
+                    "span", 
+                    class_="tm-property-search-card-attribute-icons__metric-value"
+                ).string
+        """
+                
         # Less complicated attributes: ---------------------------------------- 
         
         # Link, title, 
@@ -83,6 +88,7 @@ class Listing:
         return listing
     
 
+    @classmethod
     def _get_link(cls, listing_tag):
         # Don't worry about it being unsafe, there'll always be an href:
         href = listing_tag.find("a")["href"]  
