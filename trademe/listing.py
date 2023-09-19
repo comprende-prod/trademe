@@ -14,13 +14,13 @@ class Listing:
     """
     # In _construct_common_attributes:
     title: str = None
-    address: str = None
+    address: str = "same as title"
     price: str = None
     features: str = None
     link: str = None
     availability: str = "n/a"
     parking: str = "n/a"  
-    # ^ Set bottom two to "n/a" so you don't end up with Nones, since others 
+    # ^ Set some to "n/a" so you don't end up with Nones, since others 
     #   are guaranteed to not stay None.
 
     # Handled individually by constructors:
@@ -45,33 +45,43 @@ class Listing:
         # - If string.lower() has "available" in it, it's a rent listing
         #   and you need to set the `availability` attribute.
         # - Else, it's an address, so set address.
-        address_or_availability = listing.find(constants.ADDRESS_TAG).string
+        address_or_availability = listing_soup.find(constants.ADDRESS_TAG).string
         if "available" in address_or_availability.lower():
             listing.availability = address_or_availability
         else:
             listing.address = address_or_availability
 
         # Parking is also slightly more complicated:
-        def has_parking(tag):
-            # List items need to meet a bunch of conditions
-            # - Set out a bunch of conditions:
-            name_right = tag.name == "li"
-            class_right = tag.get("class") == "tm-property-search-card-attribu\
-                te-icons__metric ng-star-inserted"
-            has_parking_icon = \
-                tag.find("tg-icon").get("alt").lower() == "total parking"
-            # - Return true if Tag object meets conditions
-            return all((name_right, class_right, has_parking_icon))
-        
-        parking_list_item = listing_soup.find(has_parking)  
-        if parking_list_item:  # Note it will be None if not found
-            span = parking_list_item.find("span", class_="tm-property-search-c\
-                                          ard-attribute-icons__metric-value")
-            listing.parking = span.string
+        # - find all relevant list items in listing_soup
+        # - check if they have a parking icon
+        # - if so, get their span string
+        list_items = listing_soup.find_all(
+            "li", 
+            class_="tm-property-search-card-attribute-icons__metric ng-star-in\
+                serted"
+        )
+        parking_li = None
+        for li in list_items:
+            # Get icon:
+            icon = li.find("tg-icon")
+            if icon.get("alt").lower() == "total parking":
+                parking_li = li
+                break
+        if parking_li is not None:
+            # Then get span
+            span = parking_li.find(
+                "span", 
+                class_="tm-property-search-card-attribute-icons__metric-value"
+            )
+            try: 
+                listing.parking = span.string
+            except AttributeError:  
+                # If it somehow has an icon but no number of parking spaces
+                pass
 
         # Less complicated attributes: ---------------------------------------- 
         
-        listing.link = _get_link(listing_soup)
+        listing.link = cls._get_link(listing_soup)
         listing.title = listing_soup.find(constants.TITLE_TAG).string
         listing.price = listing_soup.find(
             constants.TAG_PRICE, 
@@ -87,7 +97,8 @@ class Listing:
         return listing
     
 
-    def _get_link(listing_tag):
+    @classmethod
+    def _get_link(cls, listing_tag):
         # Don't worry about it being unsafe, there'll always be an href:
         href = listing_tag.find("a")["href"]  
         if href.startswith("/a/") == False:
