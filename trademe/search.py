@@ -91,24 +91,22 @@ def make_url(
         - open_homes; true/false
         - new_homes; true/false
     """
-    # Handle illegal location (region, district, suburb) inputs:
-    # The only legal inputs are:
-    # 1. region, district, suburb
-    # 2. region, district
-    # 3. suburb
-    # 4. None of those
-    if ((region and district and suburb) or (region and district) or region) \
-        == False: 
-        # ^ Order of this line is crucial due to short circuit operators.
-        if not (region and district and suburb == False):  
-            raise ValueError(
+    # Raise if bad location arguments:
+    # 4 acceptable cases:
+    if not (
+        (region and district and suburb) or
+        (region and district) or
+        region or 
+        (region and district and suburb == False)
+    ):
+        raise ValueError(
                 "The only legal inputs are: \
                 1. region, district, suburb \
                 2. region, district \
                 3. suburb \
                 4. None of those"
             )
-    
+
     # Check sale_or_rent really is "sale" or "rent":
     if sale_or_rent.lower() not in ("sale", "rent"): 
         raise ValueError("sale_or_rent must be 'sale' or 'rent'.")

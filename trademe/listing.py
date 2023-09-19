@@ -18,10 +18,7 @@ class Listing:
     price: str = None
     features: str = None
     link: str = None
-    availability: str = "n/a"
-    #parking: str = "n/a"  
-    # ^ Set bottom two to "n/a" so you don't end up with Nones, since others 
-    #   are guaranteed to not stay None.
+    availability: str = None
 
     # Handled individually by constructors:
     agent: str = None
