@@ -101,11 +101,12 @@ class Listing:
         listing = cls._construct_common_attributes(listing_soup)
 
         # Agent
-        # No handling needed:
-        listing.agent = listing_soup.find(
-            constants.AGENT_SUPER_FEATURE_TAG,
-            class_=constants.AGENT_SUPER_FEATURE_CLASS
-        ).string
+        try:
+            listing.agent = listing_soup.find(
+                constants.AGENT_SUPER_FEATURE_TAG,
+                class_=constants.AGENT_SUPER_FEATURE_CLASS
+            ).string
+        except AttributeError: pass  # agent will be None for super feature - it's annoyingly inconsistent but hey
 
         # Agency
         agency_element = listing_soup.find(
@@ -150,11 +151,14 @@ class Listing:
                 class_=constants.AGENCY_PREMIUM_CLASS
             )["alt"]
         except (KeyError, TypeError):
-            # Agency at the top of the listing insteaD:
-            listing.agency = listing_soup.find(
-                constants.AGENCY_TAG,
-                class_=constants.ALT_AGENCY_PREMIUM_CLASS
-            )["alt"]
+            try:
+                # Agency at the top of the listing insteaD:
+                listing.agency = listing_soup.find(
+                    constants.AGENCY_TAG,
+                    class_=constants.ALT_AGENCY_PREMIUM_CLASS
+                )["alt"]
+            except (KeyError, TypeError):
+                pass  # Will be None if no agency found either way.
         
         return listing
 

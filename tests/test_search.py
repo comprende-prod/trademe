@@ -7,7 +7,7 @@ change), but make_url() is not.
 
 import pytest
 from ..trademe.search import search, make_url
-from helpers import listing_match
+from .helpers import listing_match
 
 
 # Testing make_url() ----------------------------------------------------------
@@ -44,32 +44,32 @@ def test_make_url():
     # For each, check kwargs work.
 
     # 1 - rent
-    assert make_url("rent", "Wellington", "Wellington", "aro-valley").lower() == "https://www.trademe.co.nz/a/property/residential/rent/wellington/wellington/aro-valley"
+    assert make_url("rent", "Wellington", "Wellington", "aro-valley").lower() == "https://www.trademe.co.nz/a/property/residential/rent/wellington/wellington/aro-valley/search?"
     # 1 - sale
-    assert make_url("sale", "Wellington", "Wellington", "aro-valley").lower() == "https://www.trademe.co.nz/a/property/residential/sale/wellington/wellington/aro-valley"
+    assert make_url("sale", "Wellington", "Wellington", "aro-valley").lower() == "https://www.trademe.co.nz/a/property/residential/sale/wellington/wellington/aro-valley/search?"
     # 1 - kwargs
-    assert make_url("sale", "Wellington", "Wellington", "aro-valley", price_min=100000, bedrooms_min=1) in ("https://www.trademe.co.nz/a/property/residential/sale/wellington/wellington/aro-valley/search?price_min=100000&bedrooms_min=1", "https://www.trademe.co.nz/a/property/residential/sale/wellington/wellington/aro-valley/search?bedrooms_min=1&price_min=100000")
+    assert make_url("sale", "Wellington", "Wellington", "aro-valley", price_min=100000, bedrooms_min=1).lower() in ("https://www.trademe.co.nz/a/property/residential/sale/wellington/wellington/aro-valley/search?price_min=100000&bedrooms_min=1", "https://www.trademe.co.nz/a/property/residential/sale/wellington/wellington/aro-valley/search?bedrooms_min=1&price_min=100000")
 
     # 2 - rent
-    assert make_url("rent", "wellington", "wellington").lower() == "https://www.trademe.co.nz/a/property/residential/rent/wellington/wellington"
+    assert make_url("rent", "wellington", "wellington").lower() == "https://www.trademe.co.nz/a/property/residential/rent/wellington/wellington/search?"
     # 2 - sale
-    assert make_url("sale", "wellington", "wellington").lower() == "https://www.trademe.co.nz/a/property/residential/sale/wellington/wellington"
+    assert make_url("sale", "wellington", "wellington").lower() == "https://www.trademe.co.nz/a/property/residential/sale/wellington/wellington/search?"
     # 2 - kwargs
     assert make_url("rent", "wellington", "wellington", property_type="townhouse", pets_ok="true").lower() in ("https://www.trademe.co.nz/a/property/residential/rent/wellington/wellington/search?property_type=townhouse&pets_ok=true", "https://www.trademe.co.nz/a/property/residential/rent/wellington/wellington/search?pets_ok=true&property_type=townhouse")
 
     # 3 - rent
-    assert make_url("rent", "wellington").lower() == "https://www.trademe.co.nz/a/property/residential/rent/wellington"
+    assert make_url("rent", "wellington").lower() == "https://www.trademe.co.nz/a/property/residential/rent/wellington/search?"
     # 3 - sale
-    assert make_url("sale", "wellington").lower() == "https://www.trademe.co.nz/a/property/residential/sale/wellington"
+    assert make_url("sale", "wellington").lower() == "https://www.trademe.co.nz/a/property/residential/sale/wellington/search?"
     # 3 - kwargs
-    assert make_url("sale", "wellington", open_homes="true", price_max="650000") in  ("https://www.trademe.co.nz/a/property/residential/sale/wellington/search?open_homes=true&price_max=650000", "https://www.trademe.co.nz/a/property/residential/sale/wellington/search?price_max=650000&open_homes=true")
+    assert make_url("sale", "wellington", open_homes="true", price_max="650000").lower() in  ("https://www.trademe.co.nz/a/property/residential/sale/wellington/search?open_homes=true&price_max=650000", "https://www.trademe.co.nz/a/property/residential/sale/wellington/search?price_max=650000&open_homes=true")
 
     # 4 - rent
-    assert make_url("rent").lower() == "https://www.trademe.co.nz/a/property/residential/rent/search"
+    assert make_url("rent").lower() == "https://www.trademe.co.nz/a/property/residential/rent/search?"
     # 4 - sale
-    assert make_url("sale").lower() == "https://www.trademe.co.nz/a/property/residential/sale/search"
+    assert make_url("sale").lower() == "https://www.trademe.co.nz/a/property/residential/sale/search?"
     # 4 - kwargs
-    assert make_url("rent", propert_type="apartment", price_max=700) in ("https://www.trademe.co.nz/a/property/residential/rent/wellington/wellington/search?property_type=apartment&price_max=700", "https://www.trademe.co.nz/a/property/residential/rent/wellington/wellington/search?price_max=700&property_type=apartment")
+    assert make_url("rent", propert_type="apartment", price_max=700).lower() in ("https://www.trademe.co.nz/a/property/residential/rent/search?property_type=apartment&price_max=700", "https://www.trademe.co.nz/a/property/residential/rent/search?price_max=700&property_type=apartment")
 
 
 # Testing search() ------------------------------------------------------------
@@ -91,10 +91,11 @@ def test_make_url():
 # Do search:
 # - Sale
 sale_url = make_url("sale", "wellington", "wellington", "aro-valley", adjacent_suburbs="true", price_min=1600000, bedrooms_min=1)
-sale_listings = search(urls=sale_url)
+#sale_listings = search(urls=sale_url)
+sale_listings = search(None, ["--headless=new", "--start-maximized"], sale_url)
 # - Rent
 rent_url = make_url("rent", "wellington", "wellington", price_min=1074, bedrooms_min=3, bedrooms_max=5)
-rent_listings = search(urls=rent_url)
+rent_listings = search(None, ["--headless=new", "--start-maximized"], rent_url)
 
 
 # Sale tests:
