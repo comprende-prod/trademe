@@ -5,12 +5,14 @@ from pathlib import Path
 import pytest
 from bs4 import BeautifulSoup
 from trademe.listing import Listing
+from .helpers import listing_match
 
 
-# Set up path:
+# Setup
+# - Set up path:
 html = Path("html")
 
-# Features of each listing
+# - Features of each listing
 rent_super_feature = {
     "title": "Balclutha",
     "address": None,
@@ -78,14 +80,6 @@ sale_normal = {
 }
 
 
-def _match_listing_features(listing: Listing, features: dict):
-    match = True
-    for k, v in features.items():
-        if listing.get(k) != v:
-            match = False
-    return match
-
-
 # Tests:
 
 
@@ -95,40 +89,40 @@ def test_rsf():
         soup = BeautifulSoup(f.read())
     # Construct Listing from soup, check vs features
     listing = Listing.from_super_feature(soup)
-    assert _match_listing_features(listing, rent_super_feature)
+    assert listing_match(listing, **rent_super_feature)
 
 def test_rp():
     path = html / "rent_premium.html"
     with open(path, "r") as f:
         soup = BeautifulSoup(f.read())
     listing = Listing.from_premium_listing(soup)
-    assert _match_listing_features(listing, rent_premium)
+    assert listing_match(listing, **rent_premium)
 
 def test_rn():
     path = html / "rent_normal.html"
     with open(path, "r") as f:
         soup = BeautifulSoup(f.read())
     listing = Listing.from_normal_listing(soup)
-    assert _match_listing_features(listing, rent_normal)
+    assert listing_match(listing, **rent_normal)
 
 def test_ssf():
     path = html / "sale_super_feature.html"
     with open(path, "r") as f:
         soup = BeautifulSoup(f.read())
     listing = Listing.from_super_feature(soup)
-    assert _match_listing_features(listing, sale_super_feature)
+    assert listing_match(listing, **sale_super_feature)
 
 def test_sp():
     path = html / "sale_premium.html"
     with open(path, "r") as f:
         soup = BeautifulSoup(f.read())
     listing = Listing.from_premium_listing(soup)
-    assert _match_listing_features(listing, sale_premium)
+    assert listing_match(listing, **sale_premium)
 
 def test_sn():
     path = html / "sale_normal.html"
     with open(path, "r") as f:
         soup = BeautifulSoup(f.read())
     listing = Listing.from_normal_listing(soup)
-    assert _match_listing_features(listing, sale_normal)
+    assert listing_match(listing, **sale_normal)
 

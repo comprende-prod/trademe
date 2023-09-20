@@ -1,5 +1,4 @@
-.venv/
-trademe/__pycache__/
+.venv
+**/__pycache__
 scratch.ipynb
-tests/scratch2.ipynb
-notes/
+.notes
