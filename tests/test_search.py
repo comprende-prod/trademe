@@ -6,8 +6,7 @@ change), but make_url() is not.
 
 
 import pytest
-from trademe.search import search, make_url
-from trademe.listing import Listing
+from ..trademe.search import search, make_url
 from helpers import listing_match
 
 

@@ -2,3 +2,6 @@
 **/__pycache__
 scratch.ipynb
 .notes
+.vscode
+.pytest_cache
+.coverage
