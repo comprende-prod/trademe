@@ -105,24 +105,30 @@ class Listing:
             listing.agent = listing_soup.find(
                 constants.AGENT_SUPER_FEATURE_TAG,
                 class_=constants.AGENT_SUPER_FEATURE_CLASS
-            ).string
-        except AttributeError: pass  # agent will be None for super feature - it's annoyingly inconsistent but hey
-
+            ).text
+        except AttributeError: 
+            try: 
+                listing.agent = listing_soup.find(
+                    constants.AGENT_SUPER_FEATURE_TAG,
+                    class_=constants.ALT_AGENT_SUPER_FEATURE_CLASS
+                ).text
+            except AttributeError:
+                pass  
+        
         # Agency
-        agency_element = listing_soup.find(
-            constants.AGENCY_TAG,
-            class_=constants.AGENCY_SUPER_FEATURE_CLASS
-        )
         try:
-            listing.agency = agency_element["alt"]
+            listing.agency = listing_soup.find(
+                constants.AGENCY_TAG,
+                class_=constants.AGENCY_SUPER_FEATURE_CLASS
+            )["alt"]
         except (KeyError, TypeError):
-            # ^ TypeError *sounds* weird, but we include it because you'll get
-            #   a TypeError if agency_element is None above.
-
-            # If not thrown error from code above, it's likely a private 
-            # listing:
-            listing.agency = \
-            "Could not find agency. Probably a private listing."
+            try: 
+                listing.agency = listing_soup.find(
+                    constants.AGENCY_TAG,
+                    class_=constants.ALT_AGENCY_SUPER_FEATURE_CLASS
+                )["alt"]
+            except (KeyError, TypeError):
+                pass  # Probably a private listing
 
         return listing
 
@@ -139,9 +145,8 @@ class Listing:
                 constants.AGENT_PREMIUM_TAG,
                 class_=constants.AGENT_PREMIUM_CLASS
             ).string
-        except AttributeError as e:
-            raise e("This is probably a premium listing with a novel layout \
-                    for agents. (E.g. maybe it's a private listing).")
+        except AttributeError:
+            pass
         
         # Agency
         try:
@@ -175,7 +180,7 @@ class Listing:
                 constants.AGENT_NORMAL_TAG
             ).string
         except AttributeError:
-            listing.agent = "No agent name provided."
+            pass
 
         # Agency
         try:
@@ -185,10 +190,13 @@ class Listing:
                 class_=constants.AGENCY_NORMAL_CLASS
             )["alt"]
         except (KeyError, TypeError): 
-            listing.agency = listing_soup.find(
-                constants.ALT_AGENCY_NORMAL_TAG,
-                class_=constants.ALT_AGENCY_NORMAL_CLASS
-            ).string
+            try:
+                listing.agency = listing_soup.find(
+                    constants.ALT_AGENCY_NORMAL_TAG,
+                    class_=constants.ALT_AGENCY_NORMAL_CLASS
+                ).string
+            except:
+                pass
 
         return listing
 

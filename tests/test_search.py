@@ -1,78 +1,15 @@
-"""Tests make_url() and search().
+"""Fragile warning! Tests that serach() comes up with the right results.
 
-Note that testing search() is necessarily fragile (because search results 
-change), but make_url() is not.
+Because this checks against existing results, these tests are necessarily 
+fragile. 
+If you want things to get automatically tested (e.g. every time you push
+origin), I would do that with test_listing and test_make_url, but not this.
 """
 
 
 import pytest
-from ..trademe.search import search, make_url
+from ..trademe.search import search
 from .helpers import listing_match
-
-
-# Testing make_url() ----------------------------------------------------------
-
-
-def test_make_url_raises():
-    with pytest.raises(ValueError):
-        # sale_or_rent:
-        make_url("rente")
-        make_url("ssssale")
-
-        # Location args:
-        # Bad cases include:
-        # 1. region and suburb
-        make_url(region="Wellington", suburb="Seatoun")
-        # 2. district and suburb
-        make_url(district="Wellington", suburb="Seatoun")
-        # 3. district
-        make_url(district="Wellington")
-        # 4. suburb
-        make_url(suburb="Seatoun")
-
-
-def test_make_url():
-    """Test valid inputs produce correct output."""
-    # Valid cases:
-    # 1. region, district, suburb
-    # 2. region, district
-    # 3. region
-    # 4. all((region, district, suburb)) == False
-
-    # For each, check sale and rent work too.
-
-    # For each, check kwargs work.
-
-    # 1 - rent
-    assert make_url("rent", "Wellington", "Wellington", "aro-valley").lower() == "https://www.trademe.co.nz/a/property/residential/rent/wellington/wellington/aro-valley/search?"
-    # 1 - sale
-    assert make_url("sale", "Wellington", "Wellington", "aro-valley").lower() == "https://www.trademe.co.nz/a/property/residential/sale/wellington/wellington/aro-valley/search?"
-    # 1 - kwargs
-    assert make_url("sale", "Wellington", "Wellington", "aro-valley", price_min=100000, bedrooms_min=1).lower() in ("https://www.trademe.co.nz/a/property/residential/sale/wellington/wellington/aro-valley/search?price_min=100000&bedrooms_min=1", "https://www.trademe.co.nz/a/property/residential/sale/wellington/wellington/aro-valley/search?bedrooms_min=1&price_min=100000")
-
-    # 2 - rent
-    assert make_url("rent", "wellington", "wellington").lower() == "https://www.trademe.co.nz/a/property/residential/rent/wellington/wellington/search?"
-    # 2 - sale
-    assert make_url("sale", "wellington", "wellington").lower() == "https://www.trademe.co.nz/a/property/residential/sale/wellington/wellington/search?"
-    # 2 - kwargs
-    assert make_url("rent", "wellington", "wellington", property_type="townhouse", pets_ok="true").lower() in ("https://www.trademe.co.nz/a/property/residential/rent/wellington/wellington/search?property_type=townhouse&pets_ok=true", "https://www.trademe.co.nz/a/property/residential/rent/wellington/wellington/search?pets_ok=true&property_type=townhouse")
-
-    # 3 - rent
-    assert make_url("rent", "wellington").lower() == "https://www.trademe.co.nz/a/property/residential/rent/wellington/search?"
-    # 3 - sale
-    assert make_url("sale", "wellington").lower() == "https://www.trademe.co.nz/a/property/residential/sale/wellington/search?"
-    # 3 - kwargs
-    assert make_url("sale", "wellington", open_homes="true", price_max="650000").lower() in  ("https://www.trademe.co.nz/a/property/residential/sale/wellington/search?open_homes=true&price_max=650000", "https://www.trademe.co.nz/a/property/residential/sale/wellington/search?price_max=650000&open_homes=true")
-
-    # 4 - rent
-    assert make_url("rent").lower() == "https://www.trademe.co.nz/a/property/residential/rent/search?"
-    # 4 - sale
-    assert make_url("sale").lower() == "https://www.trademe.co.nz/a/property/residential/sale/search?"
-    # 4 - kwargs
-    assert make_url("rent", property_type="apartment", price_max=700).lower() in ("https://www.trademe.co.nz/a/property/residential/rent/search?property_type=apartment&price_max=700", "https://www.trademe.co.nz/a/property/residential/rent/search?price_max=700&property_type=apartment")
-
-
-# Testing search() ------------------------------------------------------------
 
 
 # We want to test:
@@ -99,8 +36,10 @@ rent_listings = search(None, ["--headless=new", "--start-maximized"], rent_url)
 
 
 # Sale tests:
-def test_sale_number_results():
-    assert len(sale_listings) == 28
+def test_sale_number_close():
+    # Should only be higher (my code counts duplicate listings, but the number 
+    # I paste in from TradeMe search results doesn't)
+    assert len(sale_listings) in (28, 29, 30, 31, 32)
 
 
 def test_sale_super_feature_present():

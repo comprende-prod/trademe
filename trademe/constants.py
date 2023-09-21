@@ -38,6 +38,7 @@ ITEM_CLASS = "tm-property-search-card-attribute-icons__metric ng-star-inserted"
 # --- Super feature:
 AGENT_SUPER_FEATURE_TAG = "tg-media-block-content"
 AGENT_SUPER_FEATURE_CLASS = "tm-property-super-feature-card__agent-detail--simple o-media-block__content"
+ALT_AGENT_SUPER_FEATURE_CLASS = "o-media-block__content"
 # --- Premium listing:
 AGENT_PREMIUM_TAG = "div"
 AGENT_PREMIUM_CLASS = "tm-property-premium-listing-card__agents-name"
@@ -49,6 +50,7 @@ AGENT_NORMAL_TAG = "tm-property-search-card-agents-name"
 AGENCY_TAG = "img"
 # --- Super feature:
 AGENCY_SUPER_FEATURE_CLASS = "tm-property-super-feature-card__agent-detail--simple o-media-block__content"
+ALT_AGENCY_SUPER_FEATURE_CLASS = "tm-property-super-feature-card__agent-detail-branding-logo ng-star-inserted"
 # --- Premium listing:
 AGENCY_PREMIUM_CLASS = "tm-property-premium-listing-card__agency-logo ng-star-inserted"
 ALT_AGENCY_PREMIUM_CLASS = "tm-property-premium-listing-card__top-agency-logo ng-star-inserted"

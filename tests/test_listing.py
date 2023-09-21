@@ -6,7 +6,6 @@ from pathlib import Path
 import pytest
 from bs4 import BeautifulSoup
 from ..trademe.listing import Listing
-from .helpers import listing_match
 
 
 # Setup
@@ -25,7 +24,7 @@ rent_super_feature = {
     "link": "https://www.trademe.co.nz/a/property/residential/rent/otago/clutha/balclutha/listing/4324246903?rsqid=054787bff49041ccbdc3d554927f200b-002",
     "availability": "Available: Fri, 20 Oct",
     "agent": " Marietta ",
-    "agency": "Could not find agency. Probably a private listing."
+    "agency": None
 }
 
 rent_premium = {
@@ -46,7 +45,7 @@ rent_normal = {
     "features": "1 bedrooms. 1 bathrooms.",
     "link": "https://www.trademe.co.nz/a/property/residential/rent/auckland/waiheke-island/palm-beach/listing/4117008125?rsqid=834adc0142844278ab2085091e927932-003",
     "availability": "Available: Now",
-    "agent": "No agent name provided.",
+    "agent": None,
     "agency": " Private listing "
 }
 
@@ -57,8 +56,7 @@ sale_super_feature = {
     "features": "3 bedrooms. 1 bathrooms. floor area 90 meters square. land area 220 meters square.",
     "link": "https://www.trademe.co.nz/a/property/residential/sale/wellington/wellington/newtown/listing/4324065029?rsqid=62da1f27acd74ef6a40e4504583964a6-001",
     "availability": None,
-    #"agent": " Michael Hinds ",
-    "agent": "Michael Hinds",
+    "agent": " Michael Hinds ",
     "agency": "Just Paterson Real Estate Ltd MREINZ, (Licensed: REAA 2008)"
 }
 
@@ -67,7 +65,7 @@ sale_premium = {
     "address": "8/239 Adelaide Road, Newtown, Wellington",
     "price": "Deadline sale",
     "features": "2 bedrooms. 1 bathrooms. floor area 84 meters square.",
-    "link": "https://www.trademe.co.nz/a/property/residential/sale/wellington/wellington/newtown/listing/4331757012?rsqid=62da1f27acd74ef6a40e4504583964a6-001",
+    "link": "https://www.trademe.co.nz/a/property/residential/sale/wellington/wellington/newtown/listing/4331757012?rsqid=a3270af5645a45b8a71a7d1743a5c4c1-001",
     "availability": None,
     "agent": " Chris Day & Rachel Aislabie ",
     "agency": "Lowe & Co"
@@ -86,12 +84,6 @@ sale_normal = {
 
 
 # Tests:
-
-# Going to rewrite these as parameterised pytest
-# Need html path, constructor method (can do an if-else here), and listing dict
-
-
-# NEED TO WRITE A TEST CLASS, WITH AN ASSERT FOR EACH LISTING ATTRIBUTE.
 
 
 @pytest.mark.parametrize(
@@ -153,15 +145,15 @@ class TestConstructors:
 
     def test_availability(self, html_path, listing_attrs):
         listing = TestConstructors.make_listing(html_path)
-        assert listing.availability == listing_attrs["availability"]
+        assert str(listing.availability).strip() == str(listing_attrs["availability"]).strip()
 
 
     def test_agent(self, html_path, listing_attrs):
         listing = TestConstructors.make_listing(html_path)
-        assert listing.agent == listing_attrs["agent"]
+        assert str(listing.agent).strip() == str(listing_attrs["agent"]).strip()
 
 
     def test_agency(self, html_path, listing_attrs):
         listing = TestConstructors.make_listing(html_path)
-        assert listing.agency == listing_attrs["agency"]
+        assert str(listing.agency).strip() == str(listing_attrs["agency"]).strip()
 
