@@ -69,7 +69,7 @@ def test_make_url():
     # 4 - sale
     assert make_url("sale").lower() == "https://www.trademe.co.nz/a/property/residential/sale/search?"
     # 4 - kwargs
-    assert make_url("rent", propert_type="apartment", price_max=700).lower() in ("https://www.trademe.co.nz/a/property/residential/rent/search?property_type=apartment&price_max=700", "https://www.trademe.co.nz/a/property/residential/rent/search?price_max=700&property_type=apartment")
+    assert make_url("rent", property_type="apartment", price_max=700).lower() in ("https://www.trademe.co.nz/a/property/residential/rent/search?property_type=apartment&price_max=700", "https://www.trademe.co.nz/a/property/residential/rent/search?price_max=700&property_type=apartment")
 
 
 # Testing search() ------------------------------------------------------------

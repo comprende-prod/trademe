@@ -1,6 +1,7 @@
 """Test Listing constructors."""
 
 
+from functools import lru_cache
 from pathlib import Path
 import pytest
 from bs4 import BeautifulSoup
@@ -10,7 +11,7 @@ from .helpers import listing_match
 
 # Setup
 # - Set up path:
-html = Path(".html")
+html = Path("tests/html")
 
 def test_html_exists():
     assert html.exists()
@@ -56,7 +57,8 @@ sale_super_feature = {
     "features": "3 bedrooms. 1 bathrooms. floor area 90 meters square. land area 220 meters square.",
     "link": "https://www.trademe.co.nz/a/property/residential/sale/wellington/wellington/newtown/listing/4324065029?rsqid=62da1f27acd74ef6a40e4504583964a6-001",
     "availability": None,
-    "agent": " Michael Hinds ",
+    #"agent": " Michael Hinds ",
+    "agent": "Michael Hinds",
     "agency": "Just Paterson Real Estate Ltd MREINZ, (Licensed: REAA 2008)"
 }
 
@@ -85,47 +87,81 @@ sale_normal = {
 
 # Tests:
 
+# Going to rewrite these as parameterised pytest
+# Need html path, constructor method (can do an if-else here), and listing dict
 
-def test_rsf():
-    path = html / "rent_super_feature.html"
-    with open(path, "r") as f:
-        soup = BeautifulSoup(f.read(), features="html.parser")
-    # Construct Listing from soup, check vs features
-    listing = Listing.from_super_feature(soup)
-    assert listing_match(listing, **rent_super_feature)
 
-def test_rp():
-    path = html / "rent_premium.html"
-    with open(path, "r") as f:
-        soup = BeautifulSoup(f.read(), features="html.parser")
-    listing = Listing.from_premium_listing(soup)
-    assert listing_match(listing, **rent_premium)
+# NEED TO WRITE A TEST CLASS, WITH AN ASSERT FOR EACH LISTING ATTRIBUTE.
 
-def test_rn():
-    path = html / "rent_normal.html"
-    with open(path, "r") as f:
-        soup = BeautifulSoup(f.read(), features="html.parser")
-    listing = Listing.from_normal_listing(soup)
-    assert listing_match(listing, **rent_normal)
 
-def test_ssf():
-    path = html / "sale_super_feature.html"
-    with open(path, "r") as f:
-        soup = BeautifulSoup(f.read(), features="html.parser")
-    listing = Listing.from_super_feature(soup)
-    assert listing_match(listing, **sale_super_feature)
+@pytest.mark.parametrize(
+    "html_path, listing_attrs", 
+    [
+        ("rent_super_feature.html", rent_super_feature),
+        ("rent_premium.html", rent_premium),
+        ("rent_normal.html", rent_normal),
+        ("sale_super_feature.html", sale_super_feature),
+        ("sale_premium.html", sale_premium),
+        ("sale_normal.html", sale_normal)
+    ]
+)
+class TestConstructors:
 
-def test_sp():
-    path = html / "sale_premium.html"
-    with open(path, "r") as f:
-        soup = BeautifulSoup(f.read(), features="html.parser")
-    listing = Listing.from_premium_listing(soup)
-    assert listing_match(listing, **sale_premium)
 
-def test_sn():
-    path = html / "sale_normal.html"
-    with open(path, "r") as f:
-        soup = BeautifulSoup(f.read(), features="html.parser")
-    listing = Listing.from_normal_listing(soup)
-    assert listing_match(listing, **sale_normal)
+    @classmethod
+    @lru_cache
+    def make_listing(self, html_path) -> Listing:
+        path = html / html_path
+        with open(path, "r") as f:
+            soup = BeautifulSoup(f.read(), features="html.parser")
+        if "super" in html_path:
+            listing = Listing.from_super_feature(soup)
+        elif "premium" in html_path:
+            listing = Listing.from_premium_listing(soup)
+        else: 
+            listing = Listing.from_normal_listing(soup)
+        return listing
+
+
+    # In a hurry, can't make this prettier:
+
+
+    def test_title(self, html_path, listing_attrs):
+        listing = TestConstructors.make_listing(html_path)
+        assert listing.title == listing_attrs["title"]
+
+
+    def test_address(self, html_path, listing_attrs):
+        listing = TestConstructors.make_listing(html_path)
+        assert listing.address == listing_attrs["address"]
+
+    
+    def test_price(self, html_path, listing_attrs):
+        listing = TestConstructors.make_listing(html_path)
+        assert listing.price == listing_attrs["price"]
+
+
+    def test_features(self, html_path, listing_attrs):
+        listing = TestConstructors.make_listing(html_path)
+        assert listing.features == listing_attrs["features"]
+
+
+    def test_link(self, html_path, listing_attrs):
+        listing = TestConstructors.make_listing(html_path)
+        assert listing.link == listing_attrs["link"]
+
+
+    def test_availability(self, html_path, listing_attrs):
+        listing = TestConstructors.make_listing(html_path)
+        assert listing.availability == listing_attrs["availability"]
+
+
+    def test_agent(self, html_path, listing_attrs):
+        listing = TestConstructors.make_listing(html_path)
+        assert listing.agent == listing_attrs["agent"]
+
+
+    def test_agency(self, html_path, listing_attrs):
+        listing = TestConstructors.make_listing(html_path)
+        assert listing.agency == listing_attrs["agency"]
 

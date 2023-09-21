@@ -92,21 +92,16 @@ def make_url(
         - new_homes; true/false
     """
     # Raise if bad location arguments:
-    # 4 acceptable cases:
-    
-    # if args not:
-    # - region True, district True, suburb True, OR
-    # - region True, district True, suburb False, OR
-    # - region True, district True, 
+    # 4 bad cases:
+    # - region True, district False, suburb True
+    # - region False, district True, suburb True
+    # - region False, district True, suburb False
+    # - region False, district False, suburb True
 
-    acceptable_cases = [
-        {region==True, district==True, suburb==True},
-        {region==True, district==True, suburb==False},
-        {region==True, district==False, suburb==False},
-        {region==False, district==False, suburb==False}
-    ]
-
-    if {bool(region), bool(district), bool(suburb)} not in acceptable_cases:
+    if (region == True and district == False and suburb ==True) or \
+    (region == False and district == True and suburb == True) or \
+    (region == False and district == True and suburb == False) or \
+    (region == False and district == False and suburb == True):
         raise ValueError(
                     "The only legal inputs are: \
                     1. region, district, suburb \
