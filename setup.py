@@ -10,6 +10,6 @@ setuptools.setup(
     url="https://github.com/comprende-prod/trademe",
     license="GNU GPLv3",
     packages=["trademe"],
-    install_requires=["selenium", "bs4", "urllib", "dataclasses"]
+    install_requires=["selenium", "bs4", "urllib3", "dataclasses"]
 )
 
