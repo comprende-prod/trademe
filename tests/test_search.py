@@ -22,7 +22,7 @@ def sale_listings():
 
 @pytest.fixture(scope="session")
 def rent_listings():
-    rent_url = make_url("rent", "wellington", "wellington", price_min=1074, bedrooms_min=3, bedrooms_max=5)
+    rent_url = make_url("rent", "wellington", "wellington", "", price_min=1074, bedrooms_min=3, bedrooms_max=5)
     return search(None, ["--headless=new", "--start-maximized"], rent_url)
 
 
